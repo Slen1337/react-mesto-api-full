@@ -46,11 +46,21 @@ const userSchema = new Schema({
   },
 });
 
-userSchema.statics.findUserByCredentials = async function (email, password) {
-  const user = await this.findOne({ email }).select('+password');
-  const ret = await bcrypt.compare(password, user.password);
-  if (!user || !ret) return Promise.reject(new AuthError('Неправильные почта или пароль'));
-  return user;
+userSchema.statics.findUserByCredentials = function (email, password) {
+  return this.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new AuthError('Неправильные почта или пароль'));
+      }
+
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            return Promise.reject(new AuthError('Неправильные почта или пароль')); // исправлена ошибка, при которой выводило ошибку 500, там email не проходил проверку, она шла только по паролю :(
+          }
+          return user;
+        });
+    });
 };
 
 module.exports = model('user', userSchema);
