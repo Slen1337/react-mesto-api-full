@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const { errors, celebrate, Joi } = require('celebrate');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const helmet = require('helmet');
 const cards = require('./routes/cards');
 const users = require('./routes/users');
 const auth = require('./middlewares/auth');
@@ -20,7 +21,9 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
 });
 
-app.use(cors());
+app.use(helmet());
+
+app.use('*', cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
 
